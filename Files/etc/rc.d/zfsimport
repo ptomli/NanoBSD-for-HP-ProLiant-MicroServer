@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# Import available ZFS pools
+#
+# This may not be the best way of handling ZFS pools. The zpool.cache file
+# is expected, by default, to be in /boot/zfs/, which is read-only.
+# You could specify the cachefile property when creating the pool, possibly
+# to something like /etc/zfs.zpool.cache. This would require manual copying to
+# /cfg/zfs when pools are modified.
+# I've also read, somewhere, that there's no real benefit to using the cache file
+# and this works, so until I know better, I'll move on.
+#
+# PROVIDE: zfsimport
+# REQUIRE: mountcritlocal
+# BEFORE: zfs
+
+. /etc/rc.subr
+
+name="zfsimport"
+rcvar="zfsimport_enable"
+start_cmd="zfsimport_start"
+stop_cmd="zfsimport_stop"
+required_modules="zfs"
+
+zfsimport_start() {
+	if [ `$SYSCTL_N security.jail.jailed` -eq 0 ]; then
+		zpool import -a
+	fi
+}
+
+zfsimport_stop() {}
+
+load_rc_config $name
+run_rc_command "$1"
